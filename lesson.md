@@ -1,13 +1,12 @@
-# Lesson 11: CI Practicals - Applying CI to Simple-CRM-Lite
+# Lesson 4.11: CI Practicals - Applying CI to Simple-CRM-Lite
 
 ## Learning Objectives
 
 By the end of this lesson, you will be able to:
-1. Set up a Continuous Integration pipeline for a Spring Boot application with database
-2. Create CircleCI workflows with build, test, and publish jobs
-3. Configure PostgreSQL service in CircleCI for running tests
-4. Push Docker images to Docker Hub automatically from CI pipeline
-5. Troubleshoot common CI pipeline issues
+1. **Set up** a Continuous Integration pipeline for a Spring Boot application with database
+2. **Create** CircleCI workflows with build, test, and publish jobs
+3. **Configure** PostgreSQL service in CircleCI for running tests
+4. **Push** Docker images to Docker Hub automatically from a CI pipeline
 
 ---
 
@@ -16,16 +15,16 @@ By the end of this lesson, you will be able to:
 Before starting this coaching session, ensure you have:
 
 ### ✅ Completed Previous Lessons
-- [ ] Lesson 7: Continuous Integration (CircleCI basics)
-- [ ] Lesson 8: Containerized simple-crm-lite application
+- [ ] Lesson 4.7: Continuous Integration (CircleCI basics)
+- [ ] Lesson 4.8: Containerized simple-crm-lite application
 
 ### ✅ Accounts Ready
 - [ ] GitHub account (free)
-- [ ] Docker Hub account (free) - from Lesson 5
-- [ ] CircleCI account (free) - from Lesson 7
+- [ ] Docker Hub account (free) - from Lesson 4.5
+- [ ] CircleCI account (free) - from Lesson 4.7
 
 ### ✅ Project Ready
-- [ ] simple-crm-lite project on your computer (from Lesson 8)
+- [ ] simple-crm-lite project on your computer (from Lesson 4.8)
 - [ ] Dockerfile exists in project root
 - [ ] docker-compose.yml exists in project root
 - [ ] Application runs locally: `mvn spring-boot:run`
@@ -40,26 +39,26 @@ Before starting this coaching session, ensure you have:
 
 ## Introduction
 
-In Lesson 7, you learned Continuous Integration using CircleCI with the devops-demo project. In Lesson 8, you containerized the simple-crm-lite application.
+In Lesson 4.7, you learned Continuous Integration using CircleCI with the devops-demo project. In Lesson 4.8, you containerized the simple-crm-lite application.
 
 **Today, you'll combine both skills:**
 - Set up a CI pipeline for simple-crm-lite
 - Automatically build, test, and publish Docker images
-- Use the SAME approach as Lesson 7, but for your simple-crm-lite project
+- Use the SAME approach as Lesson 4.7, but for your simple-crm-lite project
 
 **Why This Matters:**
 - Every code push triggers automatic testing
 - Bugs are caught immediately
 - Docker images are built automatically
-- Ready for deployment (Lesson 12!)
+- Ready for deployment (Lesson 4.12!)
 
 ---
 
-## Part 1 - Setup and Review 
+## Part 1 - Setup and Review
 
 ### Step 1: Review CI Concepts
 
-**Quick Review from Lesson 7:**
+**Quick Review from Lesson 4.7:**
 
 **What is Continuous Integration (CI)?**
 - Automatically build and test code when you push to GitHub
@@ -75,7 +74,7 @@ In Lesson 7, you learned Continuous Integration using CircleCI with the devops-d
 
 ---
 
-### Step 2: Check Your Accounts (5 minutes)
+### Step 2: Check Your Accounts
 
 **Instructor will verify everyone has:**
 
@@ -90,7 +89,7 @@ In Lesson 7, you learned Continuous Integration using CircleCI with the devops-d
 
 3. **CircleCI Account**
    - Go to [https://circleci.com](https://circleci.com)
-   - Login with GitHub (you did this in Lesson 7)
+   - Login with GitHub (you did this in Lesson 4.7)
    - Should see CircleCI dashboard
 
 ---
@@ -137,9 +136,9 @@ git push -u origin main
 
 ---
 
-### Step 4: Review Project Structure 
+### Step 4: Review Project Structure
 
-Let's quickly review what we have from Lesson 8:
+Let's quickly review what we have from Lesson 4.8:
 
 **Instructor will show on screen:**
 
@@ -162,8 +161,8 @@ simple-crm-lite/
 │   │       └── application.properties
 │   └── test/
 │       └── java/...
-├── Dockerfile                    ← From Lesson 8
-├── docker-compose.yml           ← From Lesson 8
+├── Dockerfile                    ← From Lesson 4.8
+├── docker-compose.yml           ← From Lesson 4.8
 └── pom.xml
 ```
 
@@ -179,7 +178,7 @@ simple-crm-lite/
 
 For CI to be meaningful, we need tests! Let's add ONE simple test.
 
-### Step 1: Create Test Directory Structure 
+### Step 1: Create Test Directory Structure
 
 Check if this directory exists:
 ```
@@ -188,14 +187,13 @@ src/test/java/com/example/simplecrmlite/controller/
 
 If it doesn't exist, create it:
 
-**In your IDE or terminal:**
 ```bash
 mkdir -p src/test/java/com/example/simplecrmlite/controller
 ```
 
 ---
 
-### Step 2: Add Test Dependency in pom.xml 
+### Step 2: Add Test Dependency in pom.xml
 
 Open `pom.xml` and verify you have the test dependency:
 
@@ -216,7 +214,7 @@ Open `pom.xml` and verify you have the test dependency:
 
 ---
 
-### Step 3: Create a Simple Controller Test 
+### Step 3: Create a Simple Controller Test
 
 Create a new file:
 ```
@@ -303,7 +301,7 @@ public class CustomerControllerTest {
 
 ---
 
-### Step 4: Run the Test Locally 
+### Step 4: Run the Test Locally
 
 **Run the test to make sure it works:**
 
@@ -319,7 +317,7 @@ mvn test
 
 ---
 
-### Step 5: Commit and Push Test 
+### Step 5: Commit and Push Test
 
 ```bash
 git add .
@@ -333,9 +331,9 @@ git push origin main
 
 ## Part 3 - Create CircleCI Pipeline
 
-Now we'll create the CI pipeline! This is similar to Lesson 7, but adapted for simple-crm-lite.
+Now we'll create the CI pipeline! This is similar to Lesson 4.7, but adapted for simple-crm-lite.
 
-### Step 1: Create CircleCI Configuration File 
+### Step 1: Create CircleCI Configuration File
 
 In your project root, create this directory and file:
 
@@ -349,7 +347,7 @@ Create file: `.circleci/config.yml`
 
 ---
 
-### Step 2: Build Job 
+### Step 2: Build Job
 
 Add this to your `.circleci/config.yml`:
 
@@ -361,35 +359,28 @@ jobs:
   # BUILD JOB - Compile and package the app
   # ==========================================
   build:
-    # Use CircleCI's OpenJDK 21 image
     docker:
       - image: cimg/openjdk:21.0
     
     steps:
-      # Step 1: Get code from GitHub
       - checkout
       
-      # Step 2: Restore Maven dependencies from cache (if available)
-      # This speeds up builds by not re-downloading dependencies every time
       - restore_cache:
           keys:
             - maven-deps-{{ checksum "pom.xml" }}
             - maven-deps-
       
-      # Step 3: Build the application
       - run:
           name: Install dependencies and build
           command: |
             echo "Building the application..."
             mvn clean install -DskipTests
       
-      # Step 4: Save Maven dependencies to cache for next build
       - save_cache:
           paths:
             - ~/.m2
           key: maven-deps-{{ checksum "pom.xml" }}
       
-      # Step 5: Save the JAR file for next job (test job will need it)
       - persist_to_workspace:
           root: .
           paths:
@@ -405,7 +396,7 @@ jobs:
 
 ---
 
-### Step 3: Test Job 
+### Step 3: Test Job
 
 Add the test job to your `.circleci/config.yml` (below the build job):
 
@@ -414,19 +405,16 @@ Add the test job to your `.circleci/config.yml` (below the build job):
   # TEST JOB - Run tests with PostgreSQL
   # ==========================================
   test:
-    # Primary container: Java for running tests
     docker:
       - image: cimg/openjdk:21.0
       
       # Secondary container: PostgreSQL database for tests
-      # This runs alongside the main container
       - image: cimg/postgres:16.0
         environment:
           POSTGRES_DB: simplecrmlite
           POSTGRES_USER: postgres
           POSTGRES_PASSWORD: password
     
-    # Environment variables for Spring Boot to connect to PostgreSQL
     environment:
       SPRING_DATASOURCE_URL: jdbc:postgresql://localhost:5432/simplecrmlite
       SPRING_DATASOURCE_USERNAME: postgres
@@ -434,17 +422,13 @@ Add the test job to your `.circleci/config.yml` (below the build job):
       SPRING_JPA_HIBERNATE_DDL_AUTO: create
     
     steps:
-      # Step 1: Get code from GitHub
       - checkout
       
-      # Step 2: Restore Maven dependencies from cache
       - restore_cache:
           keys:
             - maven-deps-{{ checksum "pom.xml" }}
             - maven-deps-
       
-      # Step 3: Wait for PostgreSQL to be ready
-      # Tests will fail if database isn't ready yet
       - run:
           name: Wait for PostgreSQL
           command: |
@@ -459,18 +443,15 @@ Add the test job to your `.circleci/config.yml` (below the build job):
             echo "PostgreSQL failed to start"
             exit 1
       
-      # Step 4: Run tests
       - run:
           name: Run tests
           command: |
             echo "Running tests..."
             mvn test
       
-      # Step 5: Save test results for CircleCI to display
       - store_test_results:
           path: target/surefire-reports
       
-      # Step 6: Save test reports as artifacts (you can download them)
       - store_artifacts:
           path: target/surefire-reports
 ```
@@ -486,7 +467,7 @@ Add the test job to your `.circleci/config.yml` (below the build job):
 
 ---
 
-### Step 4: Publish Job 
+### Step 4: Publish Job
 
 Add the publish job to your `.circleci/config.yml`:
 
@@ -495,30 +476,23 @@ Add the publish job to your `.circleci/config.yml`:
   # PUBLISH JOB - Build and push Docker image
   # ==========================================
   publish:
-    # Use CircleCI's base image with Docker
     docker:
       - image: cimg/base:stable
     
     steps:
-      # Step 1: Get code from GitHub
       - checkout
       
-      # Step 2: Get JAR file from build job
       - attach_workspace:
           at: .
       
-      # Step 3: Setup Docker (required for building images)
-      - setup_remote_docker:
-          version: 20.10.14
+      - setup_remote_docker
       
-      # Step 4: Build Docker image using your Dockerfile
       - run:
           name: Build Docker image
           command: |
             echo "Building Docker image..."
             docker build -t $DOCKER_USERNAME/simple-crm-lite:latest .
       
-      # Step 5: Login to Docker Hub and push image
       - run:
           name: Push to Docker Hub
           command: |
@@ -531,12 +505,12 @@ Add the publish job to your `.circleci/config.yml`:
 **What This Does:**
 1. Sets up Docker environment
 2. Builds Docker image using your Dockerfile
-3. Logs in to Docker Hub using credentials (we'll set these up later)
+3. Logs in to Docker Hub using credentials
 4. Pushes image to Docker Hub
 
 ---
 
-### Step 5: Define Workflow 
+### Step 5: Define Workflow
 
 Add the workflow at the END of your `.circleci/config.yml`:
 
@@ -555,13 +529,6 @@ workflows:
           requires:
             - test
 ```
-
-**What This Does:**
-1. Runs build job first
-2. Runs test job only if build succeeds
-3. Runs publish job only if test succeeds
-
-**If ANY job fails, the pipeline stops!**
 
 ---
 
@@ -645,8 +612,7 @@ jobs:
       - checkout
       - attach_workspace:
           at: .
-      - setup_remote_docker:
-          version: 20.10.14
+      - setup_remote_docker
       - run:
           name: Build Docker image
           command: |
@@ -674,9 +640,9 @@ workflows:
 
 ---
 
-## Part 4 - Setup and Run Pipeline 
+## Part 4 - Setup and Run Pipeline
 
-### Step 1: Commit CircleCI Configuration 
+### Step 1: Commit CircleCI Configuration
 
 ```bash
 git add .circleci/config.yml
@@ -688,7 +654,7 @@ git push origin main
 
 ---
 
-### Step 2: Connect CircleCI to GitHub Repository (10 minutes)
+### Step 2: Connect CircleCI to GitHub Repository
 
 **2.1: Go to CircleCI**
 
@@ -713,7 +679,7 @@ git push origin main
 
 ---
 
-### Step 3: Add Docker Hub Credentials 
+### Step 3: Add Docker Hub Credentials
 
 The publish job needs your Docker Hub username and password.
 
@@ -747,14 +713,13 @@ The publish job needs your Docker Hub username and password.
 
 ---
 
-### Step 4: Trigger Pipeline 
+### Step 4: Trigger Pipeline
 
 Now let's trigger the pipeline to run again!
 
 **Option 1: Push a small change**
 
 ```bash
-# Make a small change (add comment to README or config)
 git add .
 git commit -m "Trigger pipeline"
 git push origin main
@@ -768,7 +733,7 @@ git push origin main
 
 ---
 
-### Step 5: Watch Pipeline Run 
+### Step 5: Watch Pipeline Run
 
 **Instructor will project on screen:**
 
@@ -811,7 +776,7 @@ git push origin main
 
 ## Part 5 - Verify and Wrap-up
 
-### Step 1: Verify Docker Image on Docker Hub (5 minutes)
+### Step 1: Verify Docker Image on Docker Hub
 
 **Check if image was published:**
 
@@ -826,7 +791,7 @@ git push origin main
 
 ---
 
-### Step 2: Pull and Run the Image Locally 
+### Step 2: Pull and Run the Image Locally
 
 **Let's test the image that CI built:**
 
@@ -834,9 +799,8 @@ git push origin main
 # Pull the image from Docker Hub
 docker pull YOUR-DOCKERHUB-USERNAME/simple-crm-lite:latest
 
-# Run it (with database)
-# First, make sure your docker-compose from Lesson 8 is stopped
-docker-compose down
+# Stop any running containers from previous lessons
+docker compose down
 
 # Run just the database
 docker run -d \
@@ -876,7 +840,7 @@ docker rm simple-crm-app simple-crm-db
 
 ---
 
-### Step 3: Understanding What You Built 
+### Step 3: Understanding What You Built
 
 **Instructor will recap:**
 
@@ -901,28 +865,24 @@ docker rm simple-crm-app simple-crm-db
 
 ## Troubleshooting Guide
 
-### Common Issues and Solutions
-
-**Issue 1: Build job fails - "Could not find or load main class"**
+### Issue 1: Build job fails - "Could not find or load main class"
 
 **Cause:** Java version mismatch
 
 **Solution:**
 ```yml
-# Make sure you're using Java 21 in CircleCI
 docker:
   - image: cimg/openjdk:21.0  # Must match your local Java version
 ```
 
 ---
 
-**Issue 2: Test job fails - "Connection refused to PostgreSQL"**
+### Issue 2: Test job fails - "Connection refused to PostgreSQL"
 
 **Cause:** PostgreSQL not ready yet, or wrong connection settings
 
 **Solution 1:** Increase wait time
 ```yml
-# In test job, increase wait iterations
 for i in {1..15}; do  # Changed from 10 to 15
 ```
 
@@ -930,12 +890,11 @@ for i in {1..15}; do  # Changed from 10 to 15
 ```yml
 environment:
   SPRING_DATASOURCE_URL: jdbc:postgresql://localhost:5432/simplecrmlite
-  # Make sure: localhost, port 5432, correct database name
 ```
 
 ---
 
-**Issue 3: Publish job fails - "denied: requested access to resource is denied"**
+### Issue 3: Publish job fails - "denied: requested access to resource is denied"
 
 **Cause:** Wrong Docker Hub credentials or image name
 
@@ -946,14 +905,11 @@ environment:
 2. Verify image name in config:
    ```yml
    docker build -t $DOCKER_USERNAME/simple-crm-lite:latest .
-   # Make sure repository name is lowercase, no special characters
    ```
 
 ---
 
-**Issue 4: Publish job fails - "unauthorized: incorrect username or password"**
-
-**Cause:** Wrong Docker Hub credentials
+### Issue 4: Publish job fails - "unauthorized: incorrect username or password"
 
 **Solution:**
 1. Go to CircleCI Project Settings → Environment Variables
@@ -963,9 +919,7 @@ environment:
 
 ---
 
-**Issue 5: Tests pass locally but fail in CircleCI**
-
-**Cause:** Different environment or missing dependencies
+### Issue 5: Tests pass locally but fail in CircleCI
 
 **Solution:**
 1. Check pom.xml has all dependencies
@@ -975,9 +929,7 @@ environment:
 
 ---
 
-**Issue 6: Pipeline triggers but no jobs run**
-
-**Cause:** CircleCI not detecting config file
+### Issue 6: Pipeline triggers but no jobs run
 
 **Solution:**
 1. Verify file is at `.circleci/config.yml` (note the dot!)
@@ -987,9 +939,7 @@ environment:
 
 ---
 
-**Issue 7: Build is slow (>10 minutes)**
-
-**Cause:** Not using cache
+### Issue 7: Build is slow (>10 minutes)
 
 **Solution:** Ensure you have cache configured:
 ```yml
@@ -1004,12 +954,11 @@ environment:
 
 ---
 
-**Issue 8: App can't connect to database when testing locally (Linux users)**
+### Issue 8: App can't connect to database when testing locally (Linux users)
 
 **Cause:** `host.docker.internal` doesn't work on Linux
 
-**Solution:**
-Use Docker network instead:
+**Solution:** Use Docker network instead:
 ```bash
 # Create a network
 docker network create simple-crm-network
@@ -1065,7 +1014,7 @@ curl http://localhost:8080/customers
 **3. Docker + CI = Deployment Ready:**
 - Every successful build creates a Docker image
 - Image is on Docker Hub, ready to deploy
-- In Lesson 12, we'll deploy automatically!
+- In Lesson 4.12, we'll deploy automatically!
 
 **4. Professional workflow:**
 - This is how real companies work
@@ -1074,23 +1023,11 @@ curl http://localhost:8080/customers
 
 ---
 
-
-
 ## Additional Resources
 
-### Official Documentation
 - [CircleCI Documentation](https://circleci.com/docs/)
 - [CircleCI Java/Maven Guide](https://circleci.com/docs/language-java-maven/)
 - [CircleCI PostgreSQL Service](https://circleci.com/docs/postgres-config/)
-
-### Video Tutorials
-- [CircleCI Getting Started](https://www.youtube.com/results?search_query=circleci+spring+boot)
-- [CI/CD Explained](https://www.youtube.com/results?search_query=ci+cd+explained)
-
-### Useful Links
-- [CircleCI Status](https://status.circleci.com/) - Check if CircleCI is down
-- [Docker Hub](https://hub.docker.com) - View your images
-- [CircleCI Community](https://discuss.circleci.com/) - Ask questions
-
----
-
+- [CircleCI Status](https://status.circleci.com/)
+- [Docker Hub](https://hub.docker.com)
+- [CircleCI Community](https://discuss.circleci.com/)
